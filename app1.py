@@ -344,3 +344,69 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+
+# Prediction distribution
+st.subheader("🥧 Fake vs Real News Distribution")
+
+if history:
+    counts = pd.Series(
+        [item["Prediction"] for item in history]
+    ).value_counts()
+
+    fig = px.pie(
+        names=counts.index,
+        values=counts.values,
+        hole=0.45,
+        color=counts.index,
+        color_discrete_map={
+            "REAL": "#00CC96",
+            "FAKE": "#EF553B"
+        }
+    )
+
+    fig.update_traces(
+        textinfo="label+percent",
+        pull=[0.08] * len(counts),
+        rotation=45
+    )
+
+    fig.update_layout(
+        title="News Prediction Overview",
+        template="plotly_dark",
+        height=450
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Chart dekhne ke liye pehle news analyze karein.")
+
+st.subheader("🎯 Model Confidence")
+
+confidence = float(probability) * 100
+
+fig = go.Figure(go.Indicator(
+    mode="gauge+number",
+    value=confidence,
+    number={"suffix": "%"},
+    title={"text": "Prediction Confidence"},
+    gauge={
+        "axis": {"range": [0, 100]},
+        "bar": {"color": "#00CC96"},
+        "steps": [
+            {"range": [0, 50], "color": "#EF553B"},
+            {"range": [50, 75], "color": "#FFA15A"},
+            {"range": [75, 100], "color": "#00CC96"}
+        ]
+    }
+))
+
+fig.update_layout(
+    template="plotly_dark",
+    height=350
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
